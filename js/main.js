@@ -126,7 +126,7 @@ window.onload = function () {
             var heart = game.add.sprite(0, 0, 'heart');
             heart.animations.add('spawn', [0], 4, true);
             heart.animations.add('grow', [1, 2, 3], 4, true);
-            heart.animations.add('move', [3], 2, true);
+            heart.animations.add('move', [3, 4, 5], 5, true);
             heartGroup.add(heart);
             game.physics.enable(heart, Phaser.Physics.ARCADE);
             heart.body.gravity.y = 400;
@@ -144,6 +144,7 @@ window.onload = function () {
             snow.animations.add('grow', [1, 2, 3], 4, true);
             snow.animations.add('move', [3], 2, true);
             snowGroup.add(snow);
+            snow.isShadow = false;
             game.physics.enable(snow, Phaser.Physics.ARCADE);
             snow.body.gravity.y = 400;
             snow.body.drag.setTo(drag, 0);
@@ -158,7 +159,7 @@ window.onload = function () {
             var spider = game.add.sprite(0, 0, 'spider');
             spider.animations.add('spawn', [0], 4, true);
             spider.animations.add('grow', [1, 2, 3, 4], 4, true);
-            spider.animations.add('move', [5, 6], 18, true);
+            spider.animations.add('move', [5, 6, 7, 8], 18, true);
             spiderGroup.add(spider);
             game.physics.enable(spider, Phaser.Physics.ARCADE);
             spider.isShadow = false;
@@ -175,7 +176,7 @@ window.onload = function () {
             var shadow = game.add.sprite(0, 0, 'shadowl');
             shadow.animations.add('spawn', [0], 4, true);
             shadow.animations.add('grow', [1, 2, 3, 4], 4, true);
-            shadow.animations.add('move', [5, 6], 18, true);
+            shadow.animations.add('move', [5, 6, 7, 8], 18, true);
             shadowGroup.add(shadow);
             game.physics.enable(shadow, Phaser.Physics.ARCADE);
             shadow.isShadow = true;
@@ -192,7 +193,7 @@ window.onload = function () {
             var snake = game.add.sprite(0, 0, 'snaker');
             snake.animations.add('spawn', [0], 4, true);
             snake.animations.add('grow', [1, 2, 3, 4], 4, true);
-            snake.animations.add('move', [5, 6], 18, true);
+            snake.animations.add('move', [5, 6, 7, 8], 18, true);
             snakeGroup.add(snake);
             game.physics.enable(snake, Phaser.Physics.ARCADE);
             snake.isShadow = false;
@@ -229,7 +230,7 @@ window.onload = function () {
         game.world.bringToTop(platform);
         game.world.bringToTop(instructionText);
         
-        game.physics.arcade.TILE_BIAS = 60;
+        game.physics.arcade.TILE_BIAS = 100;
         
         cursors = game.input.keyboard;
 
@@ -246,6 +247,7 @@ window.onload = function () {
         game.physics.arcade.collide(player, snakeGroup, checkCollision, null, this);
         game.physics.arcade.collide(player, spiderGroup, checkCollision, null, this);
         game.physics.arcade.collide(player, shadowGroup, checkCollision, null, this);
+        game.physics.arcade.collide(player, snowGroup, checkCollision, null, this);
         game.physics.arcade.collide(player, heartGroup, gainLife, null, this);
         
     if (!dead)
@@ -491,23 +493,23 @@ window.onload = function () {
             enemy.kill();
         }
         if (enemy.poison)
+        {
+            if (enemy.body.touching.up & !enemy.isShadow)
             {
-                if (enemy.body.touching.up & !enemy.isShadow)
-                {
-                    enemy.poison = false;
-                    enemy.position.y = enemy.position.y - 50;
-                    enemy.body.velocity.y = -50;
-                    player.body.velocity.y = -1000;
-                    enemy.angle = 180;
-                    game.time.events.add((Phaser.Timer.SECOND * .4), killNow, this);
-                    counter += 1;
-                    game.world.remove(lifeAndScore);
-                    lifeAndScore = game.add.text(710, 35, ' ' + counter, { font: "36px Verdana", fill: "#ffffff", align: "left" });
-                    var explosionAnimation = explosions.getFirstExists(false);
-                    explosionAnimation.reset(player.x, player.y);
-                    explosionAnimation.play('kaboom', 20, false, true);
-                    keySound.play('', 0, 0.5);
-                }
+                enemy.poison = false;
+                enemy.position.y = enemy.position.y - 50;
+                enemy.body.velocity.y = -50;
+                player.body.velocity.y = -1000;
+                enemy.angle = 180;
+                game.time.events.add((Phaser.Timer.SECOND * .4), killNow, this);
+                counter += 1;
+                game.world.remove(lifeAndScore);
+                lifeAndScore = game.add.text(710, 35, ' ' + counter, { font: "36px Verdana", fill: "#ffffff", align: "left" });
+                var explosionAnimation = explosions.getFirstExists(false);
+                explosionAnimation.reset(player.x, player.y);
+                explosionAnimation.play('kaboom', 20, false, true);
+                keySound.play('', 0, 0.5);
+            }
             else
             {
                 if (lifeCounter == 0)
@@ -522,6 +524,14 @@ window.onload = function () {
                     toggleInvincible();
                     game.time.events.add(2000, toggleInvincible, this);
                 }
+            }
+        }
+        else
+        {
+            if (enemy.body.touching.down)
+            {
+                player.body.velocity.y = -50;
+                enemy.body.velocity.y = -100;  
             }
         }
         
